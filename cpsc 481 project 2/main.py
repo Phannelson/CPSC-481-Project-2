@@ -1,5 +1,5 @@
-from utils import Expr, first, expr, tt_entails
-from other import to_cnf, conjuncts
+from other import *
+from utils import Expr, expr, first
 import itertools
 
 class KB:
@@ -86,6 +86,65 @@ def KB_AgentProgram(KB):
 
     return program
 
+
+
+
+
+#clauses = []
+# SG# = Subgrid Number(#) 
+# ex: Subgrid 1 = SG0
+
+#Clue3part1 = expr('L & 2003')
+
+our_kb = PropKB()
+
+#friends 
+#GLADYS, LILLIE, PAM, VICTOR
+G, L, P, V = expr('G, L, P, V ')
+
+#activites
+#CAMPING, HANG GLIDING, KAYAKYING, SKYDIVING
+C, HG, KY, SD = expr('C, HG, KY, SD')
+
+#years
+y1, y2, y3, y4 = expr('y1, y2, y3, y4')
+
+#Cells
+
+#negation      =   ~
+#and           =   &
+#or            =   |
+#Xor           =   ^
+#implication   =   ==>
+#Reverse       =   <==
+#equivalance   =   <=>
+
+#add propositional logic statements
+#our_kb.tell(y3 & L)
+# our_kb.tell(G & (KY | y4))
+#our_kb.tell()
+#our_kb.tell((V & y1) | (V & y2))
+#our_kb.tell(G | '<=>' | L)
+
+our_kb.tell((G) & (KY | y4))
+our_kb.tell((~(HG | C)))
+#call print our clauses
+print(our_kb.clauses)
+
+
+
+
+
+#pl_resolution takes in (knowledgebase, propositional statement)
+#if false 
+print(pl_resolution(our_kb, (KY | y4)))
+
+
+
+
+
+
+
 """
 G = Gladys
 L = Lille
@@ -138,7 +197,7 @@ if list[1][1] = 1:
     gladys.append(list[1])
     #append cell 11 to gladys or something like that
 
-    
+
 I think however the cells might be separted like 
 
 (as in row 2001 with first letter and x,y values)
