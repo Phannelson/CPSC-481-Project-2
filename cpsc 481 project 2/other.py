@@ -208,3 +208,162 @@ def disjuncts(s):
     [(A & B)]
     """
     return dissociate('|', [s])
+
+
+def tt_entails(kb, alpha):
+  """
+  [Figure 7.10]
+  Does kb entail the sentence alpha? Use truth tables. For propositional
+  kb's and sentences. Note that the 'kb' should be an Expr which is a
+  conjunction of clauses.
+  >>> tt_entails(expr('P & Q'), expr('Q'))
+  True
+  """
+  assert not variables(alpha)
+  symbols = list(prop_symbols(kb & alpha))
+  return tt_check_all(kb, alpha, symbols, {})
+
+
+def tt_check_all(kb, alpha, symbols, model):
+  """Auxiliary routine to implement tt_entails."""
+  if not symbols:
+      if pl_true(kb, model):
+          result = pl_true(alpha, model)
+          assert result in (True, False)
+          return result
+      else:
+          return True
+  else:
+      P, rest = symbols[0], symbols[1:]
+      return (tt_check_all(kb, alpha, rest, extend(model, P, True)) and
+              tt_check_all(kb, alpha, rest, extend(model, P, False)))
+
+
+def prop_symbols(x):
+  """Return the set of all propositional symbols in x."""
+  if not isinstance(x, Expr):
+      return set()
+  elif is_prop_symbol(x.op):
+      return {x}
+  else:
+      return {symbol for arg in x.args for symbol in prop_symbols(arg)}
+
+
+def constant_symbols(x):
+  """Return the set of all constant symbols in x."""
+  if not isinstance(x, Expr):
+      return set()
+  elif is_prop_symbol(x.op) and not x.args:
+      return {x}
+  else:
+      return {symbol for arg in x.args for symbol in constant_symbols(arg)}
+
+
+def predicate_symbols(x):
+  """Return a set of (symbol_name, arity) in x.
+  All symbols (even functional) with arity > 0 are considered."""
+  if not isinstance(x, Expr) or not x.args:
+      return set()
+  pred_set = {(x.op, len(x.args))} if is_prop_symbol(x.op) else set()
+  pred_set.update({symbol for arg in x.args for symbol in predicate_symbols(arg)})
+  return pred_set
+
+
+def tt_true(s):
+  """Is a propositional sentence a tautology?
+  >>> tt_true('P | ~P')
+  True
+  """
+  s = expr(s)
+  return tt_entails(True, s)
+
+
+def pl_true(exp, model={}):
+  """Return True if the propositional logic expression is true in the model,
+  and False if it is false. If the model does not specify the value for
+  every proposition, this may return None to indicate 'not obvious';
+  this may happen even when the expression is tautological.
+  >>> pl_true(P, {}) is None
+  True
+  """
+  if exp in (True, False):
+      return exp
+  op, args = exp.op, exp.args
+  if is_prop_symbol(op):
+      return model.get(exp)
+  elif op == '~':
+      p = pl_true(args[0], model)
+      if p is None:
+          return None
+      else:
+          return not p
+  elif op == '|':
+      result = False
+      for arg in args:
+          p = pl_true(arg, model)
+          if p is True:
+              return True
+          if p is None:
+              result = None
+      return result
+  elif op == '&':
+      result = True
+      for arg in args:
+          p = pl_true(arg, model)
+          if p is False:
+              return False
+          if p is None:
+              result = None
+      return result
+  p, q = args
+  if op == '==>':
+      return pl_true(~p | q, model)
+  elif op == '<==':
+      return pl_true(p | ~q, model)
+  pt = pl_true(p, model)
+  if pt is None:
+      return None
+  qt = pl_true(q, model)
+  if qt is None:
+      return None
+  if op == '<=>':
+      return pt == qt
+  elif op == '^':  # xor or 'not equivalent'
+      return pt != qt
+  else:
+      raise ValueError('Illegal operator in logic expression' + str(exp))
+
+
+def pl_resolution(kb, alpha):
+  """
+  [Figure 7.12]
+  Propositional-logic resolution: say if alpha follows from KB.
+  >>> pl_resolution(horn_clauses_KB, A)
+  True
+  """
+  clauses = kb.clauses + conjuncts(to_cnf(~alpha))
+  new = set()
+  while True:
+      n = len(clauses)
+      pairs = [(clauses[i], clauses[j])
+               for i in range(n) for j in range(i + 1, n)]
+      for (ci, cj) in pairs:
+          resolvents = pl_resolve(ci, cj)
+          if False in resolvents:
+              return True
+          new = new.union(set(resolvents))
+      if new.issubset(set(clauses)):
+          return False
+      for c in new:
+          if c not in clauses:
+              clauses.append(c)
+
+
+def pl_resolve(ci, cj):
+  """Return all clauses that can be obtained by resolving clauses ci and cj."""
+  clauses = []
+  for di in disjuncts(ci):
+      for dj in disjuncts(cj):
+          if di == ~dj or ~di == dj:
+              clauses.append(associate('|', unique(remove_all(di, disjuncts(ci)) + remove_all(dj, disjuncts(cj)))))
+  return clauses
