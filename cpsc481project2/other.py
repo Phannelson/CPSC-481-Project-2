@@ -1,4 +1,4 @@
-from utils import *
+from cpsc481project2.utils import *
 
 def is_symbol(s):
     """A string s is a symbol if it starts with an alphabetic char.

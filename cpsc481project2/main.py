@@ -1,5 +1,5 @@
-from other import *
-from utils import Expr, expr, first
+from cpsc481project2.other import *
+from cpsc481project2.utils import Expr, expr, first
 import itertools
 
 class KB:

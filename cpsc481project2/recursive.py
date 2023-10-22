@@ -121,6 +121,7 @@ def sumTrue(combination):
 
 def make_sentense(grid):
     # Todo Make sensentes to check with the axiosm
+    pass
     
     
     
