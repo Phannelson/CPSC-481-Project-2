@@ -2,6 +2,7 @@ from other import *
 from utils import Expr, expr, first
 import itertools
 from main import PropKB
+
 #active clue # 1 :
     # (SD & y1) <==> (HG & y3)
     # (SD & y2) <==> (HG & y4)
@@ -44,7 +45,7 @@ from main import PropKB
   
   #AXIOM #7 - IF ![(person1 & year1) & (activity1 & year1)], THEN !(person1 and activity1)
 
-# grid 1 and 0 predict grid 2
+#grid 1 and 0 predict grid 2
 
 #grid 1 and 2 predict grid 0
 
@@ -60,30 +61,24 @@ def axiom_1_false_cells(symbol):
     row = symbol_parts[0]
     column = symbol_parts[1]
 
-    if row in friends:
-        for friend in friends:
-            if friend != row and not pl_resolution(new_kb, expr('~'+ year + '_' + column)):
-                list_of_false_cells.append(friend + '_' + column)
     if row in activities:
        for activity in activities:
-            if activity != row and not pl_resolution(new_kb, expr('~'+ year + '_' + column)):
+            if activity != row and not is_in_kb(new_kb, expr('~'+ activity + '_' + column)):
                 list_of_false_cells.append(activity + '_' + column)
-    if row in years:
+    elif row in years:
         for year in years:
-            if year != row and not pl_resolution(new_kb, expr('~'+ year + '_' + column)):
+            if year != row and not is_in_kb(new_kb, expr('~'+ year + '_' + column)):
                 list_of_false_cells.append(year + '_' + column)
+
     if column in friends:
         for friend in friends:
-            if friend != column and not pl_resolution(new_kb, expr('~'+ year + '_' + column)):
+            if friend != column and not is_in_kb(new_kb, expr('~'+ friend + '_' + column)):
                 list_of_false_cells.append(row + '_' + friend)
-    if column in activities:
+    elif column in activities:
         for activity in activities:
-            if activity != column and not pl_resolution(new_kb, expr('~'+ year + '_' + column)):
+            if activity != column and not is_in_kb(new_kb, expr('~'+ activity + '_' + column)):
                 list_of_false_cells.append(row + '_' + activity)
-    if column in years:
-        for year in years:
-            if year != column and not pl_resolution(new_kb, expr('~'+ year + '_' + column)):
-                list_of_false_cells.append(row + '_' + year)
+
     return list_of_false_cells
 
     
@@ -109,8 +104,18 @@ new_kb = PropKB()
 
 
 #active clue 1:
-new_kb.tell((y1_SD |'<=>'| y3_HG))
-new_kb.tell(y2_SD |'<=>'| y4_HG)
+#new_kb.tell((y1_SD |'<=>'| y3_HG))
+#new_kb.tell(y2_SD |'<=>'| y4_HG)
+new_kb.tell(~y1_SD | y3_HG)
+new_kb.tell(~y2_SD | y4_HG)
+new_kb.tell(~y3_HG | y1_SD)
+new_kb.tell(~y4_HG | y2_SD)
+
+new_kb.tell(~y1_HG)
+new_kb.tell(~y2_HG)
+
+new_kb.tell(~y3_SD)
+new_kb.tell(~y4_SD)
 
 #active clue 2:
 new_kb.tell(KY_G ^ y4_G)
@@ -128,18 +133,28 @@ new_kb.tell(~(HG_G))
 
 #ADD MORE TO KB BASED UPON AXIOMS
 
-#AXIOM #1 - IF A CELL IS TRUE, ALL THE CELLS IN IT'S ROW AND COLUMN ARE FALSE
+
 
 def is_in_kb(kb, symbol):
     for clause in kb.clauses:
-        if expr(symbol) == expr(clause):
+        symbol = expr(symbol)
+        if symbol == clause:
             return True
     return False
 
+
 while True:
 
+    #Do some resolution here. If something can be resolved that is not already in the KB, add it to the KB
+
     for symbol in total_symbols_prop:
-        if pl_resolution(new_kb, symbol):
+        if pl_resolution(new_kb, symbol) and not is_in_kb(new_kb, symbol):
+            new_kb.tell(symbol)
+
+    #AXIOM #1 - IF A CELL IS TRUE, ALL THE CELLS IN IT'S ROW AND COLUMN ARE FALSE
+
+    for symbol in total_symbols_prop:
+        if is_in_kb(new_kb, symbol):
             #print("found: ", symbol)
             #print("fill the rest of the cells as false")
             list_of_false_cells = axiom_1_false_cells(symbol)
@@ -154,22 +169,42 @@ while True:
     # years, activities
 
     for year in years:
+        false_count = 0
         for activity in activities:
             #print("looking at: ", year + '_' + activity)
-            false_count = 0
             #if a true cell is found there is no need to analyze the row or column
-            if pl_resolution(new_kb, expr(year + '_' + activity)):
+            if is_in_kb(new_kb, expr(year + '_' + activity)):
                 break
-            elif pl_resolution(new_kb, expr('~'+ year + '_' + activity)):
-                #print("false cell found")
-                #print("found: ", expr('~'+ year + '_' + activity))
+            elif is_in_kb(new_kb, expr('~'+ year + '_' + activity)):
+                print("false cell found")
+                print("found: ", expr('~'+ year + '_' + activity))
                 false_count += 1
             else:
                 #print("empty cell found")
                 empty_cell = expr(year + '_' + activity)
         if false_count == 3:
             print("AXIOM 2 Satisfied, filling final cell as true")
+            print("final cell: ", empty_cell)
             new_kb.tell(empty_cell)
+    
+    for activity in activities:
+        false_count = 0
+        for year in years:
+            #if a true cell is found there is no need to analyze the row or column
+            if is_in_kb(new_kb, expr(year + '_' + activity)):
+                break
+            elif is_in_kb(new_kb, expr('~'+ year + '_' + activity)):
+                print("false cell found")
+                print("found: ", expr('~'+ year + '_' + activity))
+                false_count += 1
+            else:
+                #print("empty cell found")
+                empty_cell = expr(year + '_' + activity)
+        print(false_count)
+        if false_count == 3:
+            print("AXIOM 2 Satisfied, filling final cell as true")
+            new_kb.tell(empty_cell)
+    
                 
                 
     # years, friends
@@ -179,16 +214,35 @@ while True:
             #print("looking at: ", year + '_' + friend)
             false_count = 0
             #if a true cell is found there is no need to analyze the row or column
-            if pl_resolution(new_kb, expr(year + '_' + friend)):
+            if is_in_kb(new_kb, expr(year + '_' + friend)):
                 break
-            elif pl_resolution(new_kb, expr('~'+ year + '_' + friend)):
+            elif is_in_kb(new_kb, expr('~'+ year + '_' + friend)):
                 #print("false cell found")
                 #print("found: ", expr('~'+ year + '_' + friend))
                 false_count += 1
             else:
                 #print("empty cell found")
                 empty_cell = expr(year + '_' + friend)
+        if false_count == 3:
+            print("AXIOM 2 Satisfied, filling final cell as true")
+            new_kb.tell(empty_cell)
 
+    for friend in friends:
+        for year in years:
+            false_count = 0
+            #if a true cell is found there is no need to analyze the row or column
+            if is_in_kb(new_kb, expr(year + '_' + friend)):
+                break
+            elif is_in_kb(new_kb, expr('~'+ year + '_' + friend)):
+                #print("false cell found")
+                #print("found: ", expr('~'+ year + '_' + friend))
+                false_count += 1
+            else:
+                #print("empty cell found")
+                empty_cell = expr(year + '_' + friend)
+        if false_count == 3:
+            print("AXIOM 2 Satisfied, filling final cell as true")
+            new_kb.tell(empty_cell)
 
 
     # activities, friends
@@ -198,9 +252,27 @@ while True:
             #print("looking at: ", activity + '_' + friend)
             false_count = 0
             #if a true cell is found there is no need to analyze the row or column
-            if pl_resolution(new_kb, expr(activity + '_' + friend)):
+            if is_in_kb(new_kb, expr(activity + '_' + friend)):
                 break
-            elif pl_resolution(new_kb, expr('~'+ activity + '_' + friend)):
+            elif is_in_kb(new_kb, expr('~'+ activity + '_' + friend)):
+                #print("false cell found")
+                #print("found: ", expr('~'+ activity + '_' + friend))
+                false_count += 1
+            else:
+                #print("empty cell found")
+                empty_cell = expr(activity + '_' + friend)
+        if false_count == 3:
+            print("AXIOM 2 Satisfied, filling final cell as true")
+            new_kb.tell(empty_cell)
+    
+    for friend in friends:
+        for activity in activities:
+            #print("looking at: ", activity + '_' + friend)
+            false_count = 0
+            #if a true cell is found there is no need to analyze the row or column
+            if is_in_kb(new_kb, expr(activity + '_' + friend)):
+                break
+            elif is_in_kb(new_kb, expr('~'+ activity + '_' + friend)):
                 #print("false cell found")
                 #print("found: ", expr('~'+ activity + '_' + friend))
                 false_count += 1
@@ -226,19 +298,20 @@ while True:
         for value_1 in outside_loop:
             for value_2 in middle_loop:
                 for value_3 in inside_loop:
-                    print("Looking at: "+value_2 + '_' + value_3)
+                    #rint("Looking at: "+value_2 + '_' + value_3)
                     iterations += 1
-                    if pl_resolution(new_kb, expr(value_1 + '_' + value_2)) and pl_resolution(new_kb, expr(value_1 + '_' + value_3)) and not pl_resolution(new_kb, expr(value_2 + '_' + value_3)):
+                    if is_in_kb(new_kb, expr(value_1 + '_' + value_2)) and is_in_kb(new_kb, expr(value_1 + '_' + value_3)) and not is_in_kb(new_kb, expr(value_2 + '_' + value_3)):
                         new_kb.tell(expr(value_2 + '_' + value_3))
                         print("FOUND 1: ", expr(value_2 + '_' + value_3))
-                    elif pl_resolution(new_kb, expr('~'+ value_1 + '_' + value_2)) and pl_resolution(new_kb, expr(value_1 + '_' + value_3)) and not pl_resolution(new_kb, expr('~'+ value_2 + '_' + value_3)):
+                    elif is_in_kb(new_kb, expr('~'+ value_1 + '_' + value_2)) and is_in_kb(new_kb, expr(value_1 + '_' + value_3)) and not is_in_kb(new_kb, expr('~'+ value_2 + '_' + value_3)):
                         new_kb.tell(expr('~'+ value_2 + '_' + value_3))
                         print("FOUND 3: ", expr('~'+ value_2 + '_' + value_3))
-                    elif pl_resolution(new_kb, expr(value_1 + '_' + value_2)) and pl_resolution(new_kb, expr('~'+ value_1 + '_' + value_3)) and not pl_resolution(new_kb, expr('~'+ value_2 + '_' + value_3)):
+                    elif is_in_kb(new_kb, expr(value_1 + '_' + value_2)) and is_in_kb(new_kb, expr('~'+ value_1 + '_' + value_3)) and not is_in_kb(new_kb, expr('~'+ value_2 + '_' + value_3)):
                         new_kb.tell(expr('~'+ value_2 + '_' + value_3))
                         print("FOUND 4: ", expr('~'+ value_2 + '_' + value_3))
                     else:
-                        print("nothing")
+                        pass
+                        #print("nothing")
         return iterations
     
     '''
