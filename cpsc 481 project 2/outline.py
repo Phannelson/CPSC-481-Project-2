@@ -81,7 +81,7 @@ def axiom_1_false_cells(symbol):
 
     return list_of_false_cells
 
-    
+
 #AXIOM #6
 friends = ['G', 'L', 'P', 'V']
 activities = ['C', 'HG', 'KY', 'SD']
@@ -143,23 +143,28 @@ def is_in_kb(kb, symbol):
     return False
 
 
-while True:
+for num in range(0, 4):
 
     #Do some resolution here. If something can be resolved that is not already in the KB, add it to the KB
 
+    
     for symbol in total_symbols_prop:
         if pl_resolution(new_kb, symbol) and not is_in_kb(new_kb, symbol):
+            print("AXIOM 0")
+            print("found:", symbol)
             new_kb.tell(symbol)
 
     #AXIOM #1 - IF A CELL IS TRUE, ALL THE CELLS IN IT'S ROW AND COLUMN ARE FALSE
 
     for symbol in total_symbols_prop:
         if is_in_kb(new_kb, symbol):
+            print("AXIOM 1")
             #print("found: ", symbol)
             #print("fill the rest of the cells as false")
             list_of_false_cells = axiom_1_false_cells(symbol)
             #print("list of false cells: ", list_of_false_cells)
             for false_cell in list_of_false_cells:
+                print("found:",~expr(false_cell))
                 new_kb.tell(~expr(false_cell))
             
     print(new_kb.clauses)
@@ -176,15 +181,15 @@ while True:
             if is_in_kb(new_kb, expr(year + '_' + activity)):
                 break
             elif is_in_kb(new_kb, expr('~'+ year + '_' + activity)):
-                print("false cell found")
-                print("found: ", expr('~'+ year + '_' + activity))
+                #print("false cell found")
+                #print("found: ", expr('~'+ year + '_' + activity))
                 false_count += 1
             else:
                 #print("empty cell found")
                 empty_cell = expr(year + '_' + activity)
         if false_count == 3:
             print("AXIOM 2 Satisfied, filling final cell as true")
-            print("final cell: ", empty_cell)
+            #print("final cell: ", empty_cell)
             new_kb.tell(empty_cell)
     
     for activity in activities:
@@ -194,13 +199,13 @@ while True:
             if is_in_kb(new_kb, expr(year + '_' + activity)):
                 break
             elif is_in_kb(new_kb, expr('~'+ year + '_' + activity)):
-                print("false cell found")
-                print("found: ", expr('~'+ year + '_' + activity))
+                #print("false cell found")
+                #print("found: ", expr('~'+ year + '_' + activity))
                 false_count += 1
             else:
                 #print("empty cell found")
                 empty_cell = expr(year + '_' + activity)
-        print(false_count)
+        #print(false_count)
         if false_count == 3:
             print("AXIOM 2 Satisfied, filling final cell as true")
             new_kb.tell(empty_cell)
@@ -302,13 +307,13 @@ while True:
                     iterations += 1
                     if is_in_kb(new_kb, expr(value_1 + '_' + value_2)) and is_in_kb(new_kb, expr(value_1 + '_' + value_3)) and not is_in_kb(new_kb, expr(value_2 + '_' + value_3)):
                         new_kb.tell(expr(value_2 + '_' + value_3))
-                        print("FOUND 1: ", expr(value_2 + '_' + value_3))
+                        print("AXIOM 3 FOUND 1: ", expr(value_2 + '_' + value_3))
                     elif is_in_kb(new_kb, expr('~'+ value_1 + '_' + value_2)) and is_in_kb(new_kb, expr(value_1 + '_' + value_3)) and not is_in_kb(new_kb, expr('~'+ value_2 + '_' + value_3)):
                         new_kb.tell(expr('~'+ value_2 + '_' + value_3))
-                        print("FOUND 3: ", expr('~'+ value_2 + '_' + value_3))
+                        print("AXIOM 3 FOUND 3: ", expr('~'+ value_2 + '_' + value_3))
                     elif is_in_kb(new_kb, expr(value_1 + '_' + value_2)) and is_in_kb(new_kb, expr('~'+ value_1 + '_' + value_3)) and not is_in_kb(new_kb, expr('~'+ value_2 + '_' + value_3)):
                         new_kb.tell(expr('~'+ value_2 + '_' + value_3))
-                        print("FOUND 4: ", expr('~'+ value_2 + '_' + value_3))
+                        print("AXIOM 3 FOUND 4: ", expr('~'+ value_2 + '_' + value_3))
                     else:
                         pass
                         #print("nothing")
@@ -330,8 +335,7 @@ while True:
 
 
 
-    print(axiom_3(years, activities, friends))
-    print("\n\n")
+    axiom_3(years, activities, friends)
     #grid 0 and 2 predict grid 1
 
     # IF (year and person) & (activity and person), THEN (year and activity)
@@ -351,15 +355,14 @@ while True:
                     new_kb.tell(expr('~'+ friend + '_' + activity))
     '''
 
-    print(axiom_3(friends, years, activities))
-    print("\n\n")
+    axiom_3(friends, years, activities)
 
     #grid 1 and 2 predict grid 0
 
 
     # IF (year and activity) & (person and activity), THEN (year and person)
 
-    print(axiom_3(activities, years, friends))
-    print("\n\n")
+    axiom_3(activities, years, friends)
+    
 
 
