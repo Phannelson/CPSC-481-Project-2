@@ -1,5 +1,5 @@
-from other import *
-from utils import Expr, expr, first
+from cpsc481project2.other import *
+from cpsc481project2.utils import Expr, expr, first
 import itertools
 
 class KB:
@@ -129,7 +129,7 @@ y1, y2, y3, y4 = expr('y1, y2, y3, y4')
 our_kb.tell((G) & (KY | y4))
 our_kb.tell((~(HG | C)))
 #call print our clauses
-print(our_kb.clauses)
+#print(our_kb.clauses)
 
 
 
@@ -137,7 +137,7 @@ print(our_kb.clauses)
 
 #pl_resolution takes in (knowledgebase, propositional statement)
 #if false 
-print(pl_resolution(our_kb, (KY | y4)))
+#print(pl_resolution(our_kb, (KY | y4)))
 
 
 
