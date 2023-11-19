@@ -1,6 +1,5 @@
 # A.I. Logic Puzzle Solver
 
-<<<<<<< HEAD
 ## Authors
 
 - Eulices Martinez de la cruz
@@ -106,8 +105,6 @@ Based on the clues, propositional logic sentences were added to the knowledge ba
 
 We implemented the "Proof by resolution" algorithm to make inferences based on the propositional logic sentences in our knowledge base.
 
-
-
 ## License
 
 This project is licensed under the [License Name] - see the [LICENSE.md](https://chat.openai.com/c/LICENSE.md) file for details.
@@ -115,12 +112,22 @@ This project is licensed under the [License Name] - see the [LICENSE.md](https:/
 ## Documentation
 
 [https://docs.google.com/document/d/1Rr6eAtqm1vNXV1tBA0NyWEss199xRCpqoyxP63mbjec/edit#heading=h.sf1rjk24v8by](https://docs.google.com/document/d/1Rr6eAtqm1vNXV1tBA0NyWEss199xRCpqoyxP63mbjec/edit#heading=h.sf1rjk24v8by)
-=======
+===========================================================================================================
+
 ## Install the following requirements by running
+
 ```
 pip install -r requirements.txt
 ```
 
 ## Running program
+
 Open `CPSC482-Project-2-update.ipynb` file. Jupiter Notebook will allow you to run code from code cell. All other code in the cpsc481project2 folder are for fun
+
 >>>>>>> a2d3aacadccc4e746a2aaef9bad9e38ec953f083
+>>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>>
+>>
